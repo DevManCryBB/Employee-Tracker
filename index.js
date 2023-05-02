@@ -1,19 +1,27 @@
-// const inquirer = require("inquirer");
-// const Engineer = require("./lib/Engineer");
-// const Intern = require("./lib/Intern");
-// const Manager = require("./lib/Manager");
+const express = require('express');
 const cTable = require('console.table');
-const fs = require("fs");
-const team = []
+const mysql = require('mysql2');
+const app = express();
+const PORT = process.env.PORT ||3000;
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-function promptUser() {
+const allRoutes = require("./controllers")
+app.use(allRoutes)
+
+app.listen(PORT,()=>{
+     console.log(`listenin to port ${PORT}!`)
+ })
+
+ function promptUser() {
     inquirer
         .prompt([
             {
-                type: "input",
-                name: "",
-                message: "As a manager, add your name here"
+                type: "list",
+                name: "WTD",
+                message: "What would you like to do?",
+                choices:['View all employees','Add employee','Update employee role','View all roles','Add role','View all departments','Add department','quit']
             },
             {
                 type: "input",
@@ -31,36 +39,40 @@ function promptUser() {
                 message: "Office Number"
             },
         ]).then(answers => {
-            const manager = new Manager(answers.managerName, answers.managerID, answers.managerEmail, answers.managerOfficeNum)
-            team.push(manager)
-            generateTeam()
-        })
-}
-
-function generateTeam() {
-    inquirer
-        .prompt([
-            {
-                type: "list",
-                name: "teamMember",
-                message: "Please choose from list below to generate your team",
-                choices: ["Engineer", "Intern", "Quit"]
-            },
-        ]).then(answers => {
-            switch (answers.teamMember) {
-                case "Engineer":
-                    createEngineer()
+            switch (answers.WTD) {
+                case "View all employees":
+                    viewAllEmployees();
 
                     break;
-                case "Intern":
-                    createIntern()
+                case "Add employee":
+                    addEmployee();
 
                     break;
-                default:
-                    fs.writeFileSync("index.html", generateHTML(team), "utf-8")
+                case "Update employee role":
+                    updateEmployee();
+
+                    break;
+                case "View all roles":
+                    viewAllRoles();
+
+                    break;
+                case "Add role":
+                    addrole();
+    
+                    break;
+                case "View all departments":
+                    viewAllDepartments();
+        
+                    break;  
+                case "Add department":
+                    addDepartment();
+    
+                    break;
+                case "Quit":
+                    process.exit()
             }
         })
-}
+    }
 function createEngineer() {
 
     inquirer
