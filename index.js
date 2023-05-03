@@ -151,34 +151,33 @@ async function addEmployee() {
   viewAllEmployees();
 }
 async function addRole() {
-    const [departments] = await db.promise().query("select * from department");
-    const ans = await inquirer.prompt([
-        {
-            type: "input",
-            name: "title",
-            message: "What is the title of the new role?",
-        },
-        {
-            type: "input",
-            name: "salary",
-            message: "What is the salary of this new role?",
-        },
-        {
-            type: "list",
-            name: "department",
-            message: "What department is the new role in?",
-      choices: departments.map(({ title, id }) => ({
-        name: title,
-        value: id,
-      })),
-    },
-  ]);
-  console.log(ans);
-  await db
-    .promise()
-    .query(`INSERT INTO role (title,salary,department_id) VALUES (?,?,?)`, [
-      role.title, role.salary, role.department
-    ]);
-  viewAllRoles();
+  const [departments] = await db.promise().query("select * from department");
+  const ans = await inquirer.prompt([
+      {
+          type: "input",
+          name: "title",
+          message: "What is the title of the new role?",
+      },
+      {
+          type: "input",
+          name: "salary",
+          message: "What is the salary of this new role?",
+      },
+      {
+          type: "list",
+          name: "department",
+          message: "What department is the new role in?",
+    choices: departments.map(({ name, id }) => ({
+      name: name,
+      value:id,
+    })),
+  },
+]);
+console.log(ans);
+await db
+  .promise()
+  .query(`INSERT INTO role (title,salary,department_id) VALUES ('${ans.title}', '${ans.salary}', '${ans.department}')`
+  );
+viewAllRoles();
 }
 promptUser();
