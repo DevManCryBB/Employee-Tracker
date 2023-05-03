@@ -1,137 +1,184 @@
-const express = require('express');
-const cTable = require('console.table');
-const mysql = require('mysql2');
-const app = express();
-const PORT = process.env.PORT ||3000;
+const cTable = require("console.table");
+const inquirer = require("inquirer");
+const mysql = require("mysql2");
+const db = mysql.createConnection(
+  {
+    host: "127.0.0.1",
+    user: "root",
+    password: "",
+    database: "employees_db",
+  },
+  console.log(`Connected to the employees_db`)
+);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+console.table(
+  `
+  '########:'##::::'##:'########::'##::::::::'#######::'##:::'##:'########:'########:
+   ##.....:: ###::'###: ##.... ##: ##:::::::'##.... ##:. ##:'##:: ##.....:: ##.....::
+   ##::::::: ####'####: ##:::: ##: ##::::::: ##:::: ##::. ####::: ##::::::: ##:::::::
+   ######::: ## ### ##: ########:: ##::::::: ##:::: ##:::. ##:::: ######::: ######:::
+   ##...:::: ##. #: ##: ##.....::: ##::::::: ##:::: ##:::: ##:::: ##...:::: ##...::::
+   ##::::::: ##:.:: ##: ##:::::::: ##::::::: ##:::: ##:::: ##:::: ##::::::: ##:::::::
+   ########: ##:::: ##: ##:::::::: ########:. #######::::: ##:::: ########: ########:
+  ........::..:::::..::..:::::::::........:::.......::::::..:::::........::........::
+  ::::::'########:'########:::::'###:::::'######::'##:::'##:'########:'########:::::
+  ::::::... ##..:: ##.... ##:::'## ##:::'##... ##: ##::'##:: ##.....:: ##.... ##::::
+  ::::::::: ##:::: ##:::: ##::'##:. ##:: ##:::..:: ##:'##::: ##::::::: ##:::: ##::::
+  ::::::::: ##:::: ########::'##:::. ##: ##::::::: #####:::: ######::: ########:::::
+  ::::::::: ##:::: ##.. ##::: #########: ##::::::: ##. ##::: ##...:::: ##.. ##::::::
+  ::::::::: ##:::: ##::. ##:: ##.... ##: ##::: ##: ##:. ##:: ##::::::: ##::. ##:::::
+  ::::::::: ##:::: ##:::. ##: ##:::: ##:. ######:: ##::. ##: ########: ##:::. ##::::
+  :::::::::..:::::..:::::..::..:::::..:::......:::..::::..::........::..:::::..::::: `
+);
 
-const allRoutes = require("./controllers")
-app.use(allRoutes)
-
-app.listen(PORT,()=>{
-     console.log(`listenin to port ${PORT}!`)
- })
-
- function promptUser() {
-    inquirer
-        .prompt([
-            {
-                type: "list",
-                name: "WTD",
-                message: "What would you like to do?",
-                choices:['View all employees','Add employee','Update employee role','View all roles','Add role','View all departments','Add department','quit']
-            },
-            {
-                type: "input",
-                name: "managerID",
-                message: "ID"
-            },
-            {
-                type: "input",
-                name: "managerEmail",
-                message: "Email"
-            },
-            {
-                type: "input",
-                name: "managerOfficeNum",
-                message: "Office Number"
-            },
-        ]).then(answers => {
-            switch (answers.WTD) {
-                case "View all employees":
-                    viewAllEmployees();
-
-                    break;
-                case "Add employee":
-                    addEmployee();
-
-                    break;
-                case "Update employee role":
-                    updateEmployee();
-
-                    break;
-                case "View all roles":
-                    viewAllRoles();
-
-                    break;
-                case "Add role":
-                    addrole();
-    
-                    break;
-                case "View all departments":
-                    viewAllDepartments();
-        
-                    break;  
-                case "Add department":
-                    addDepartment();
-    
-                    break;
-                case "Quit":
-                    process.exit()
-            }
-        })
+const promptUser = async () => {
+  try {
+    const ans = await inquirer.prompt({
+      type: "list",
+      name: "WTD",
+      message: "What would you like to do?",
+      choices: [
+        "View All Departments",
+        "View All Roles",
+        "View All Employees",
+        "Add Department",
+        "Add Role",
+        "Add Employee",
+        "Update Employee Role",
+        "Quit",
+      ],
+    });
+    switch (ans.WTD) {
+      case "View All Departments":
+        viewAllDepartments();
+        break;
+      case "View All Roles":
+        viewAllRoles();
+        break;
+      case "View All Employees":
+        viewAllEmployees();
+        break;
+      case "Add Department":
+        addDepartment();
+        break;
+      case "Add Employee":
+        addEmployee();
+        break;
+      case "Add Role":
+        addRole();
+        break;
+      case "Update Employee Role":
+        updateEmployee();
+        break;
+      case "Quit":
+        process.exit();
     }
-function createEngineer() {
-
-    inquirer
-        .prompt([
-            {
-                type: "input",
-                name: "engineerName",
-                message: "Name"
-            },
-            {
-                type: "input",
-                name: "engineerID",
-                message: "ID"
-            },
-            {
-                type: "input",
-                name: "engineerEmail",
-                message: "Email"
-            },
-            {
-                type: "input",
-                name: "engineerGitHub",
-                message: "GitHub"
-            },
-        ]).then(answers => {
-            const engineer = new Engineer(answers.engineerName, answers.engineerID, answers.engineerEmail, answers.engineerGitHub)
-            team.push(engineer)
-            generateTeam()
-        })
+  } catch (err) {
+    console.log(err);
+  }
+};
+async function viewAllDepartments() {
+  const [departments] = await db.promise().query("select * from department");
+  console.table(departments);
+  promptUser();
 }
-
-function createIntern() {
-
-    inquirer
-        .prompt([
-            {
-                type: "input",
-                name: "InternName",
-                message: "Name"
-            },
-            {
-                type: "input",
-                name: "InternID",
-                message: "ID"
-            },
-            {
-                type: "input",
-                name: "InternEmail",
-                message: "Email"
-            },
-            {
-                type: "input",
-                name: "internSchool",
-                message: "School"
-            },
-        ]).then(answers => {
-            const intern = new Intern(answers.InternName, answers.InternID, answers.InternEmail, answers.internSchool)
-            team.push(intern)
-            generateTeam()
-        })
+async function viewAllRoles() {
+  const [roles] = await db.promise().query("select * from role");
+  console.table(roles);
+  promptUser();
 }
-promptUser()
+async function viewAllEmployees() {
+  console.log("test");
+  try {
+    const [employees] = await db.promise().query("select * from employee");
+    console.table(employees);
+    promptUser();
+  } catch (err) {
+    console.log(err);
+  }
+}
+async function addDepartment() {
+  const ans = await inquirer.prompt({
+    type: "input",
+    name: "department",
+    message: "What department would you like to add?",
+  });
+  await db
+    .promise()
+    .query(`INSERT INTO department (name) VALUES ('${ans.department}')`);
+  viewAllDepartments();
+}
+async function addEmployee() {
+  const [roles] = await db.promise().query("select * from role");
+  const [employees] = await db.promise().query("select * from employee");
+  console.log(employees);
+  const ans = await inquirer.prompt([
+    {
+      type: "input",
+      name: "first_name",
+      message: "What is your first name?",
+    },
+    {
+      type: "input",
+      name: "last_name",
+      message: "What is your last name?",
+    },
+    {
+      type: "list",
+      name: "role_id",
+      message: "Please choose from one of the roles below",
+      choices: roles.map(({ title, id }) => ({
+        name: title,
+        value: id,
+      })),
+    },
+    {
+      type: "list",
+      name: "manager_id",
+      message: "Who is the employee's manager?",
+      choices: employees.map(({ first_name, last_name, id }) => ({
+        name: `${first_name} ${last_name}`,
+        value: id,
+      })),
+    },
+  ]);
+  console.log(ans);
+  await db
+    .promise()
+    .query(
+      `INSERT INTO employee (first_name,last_name,role_id,manager_id) VALUES ('${ans.first_name}','${ans.last_name}', ${ans.role_id}, ${ans.manager_id})`
+    );
+  viewAllEmployees();
+}
+async function addRole() {
+    const [departments] = await db.promise().query("select * from department");
+    const ans = await inquirer.prompt([
+        {
+            type: "input",
+            name: "title",
+            message: "What is the title of the new role?",
+        },
+        {
+            type: "input",
+            name: "salary",
+            message: "What is the salary of this new role?",
+        },
+        {
+            type: "list",
+            name: "department",
+            message: "What department is the new role in?",
+      choices: departments.map(({ title, id }) => ({
+        name: title,
+        value: id,
+      })),
+    },
+  ]);
+  console.log(ans);
+  await db
+    .promise()
+    .query(`INSERT INTO role (title,salary,department_id) VALUES (?,?,?)`, [
+      role.title, role.salary, role.department
+    ]);
+  viewAllRoles();
+}
+promptUser();
