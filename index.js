@@ -153,31 +153,64 @@ async function addEmployee() {
 async function addRole() {
   const [departments] = await db.promise().query("select * from department");
   const ans = await inquirer.prompt([
-      {
-          type: "input",
-          name: "title",
-          message: "What is the title of the new role?",
-      },
-      {
-          type: "input",
-          name: "salary",
-          message: "What is the salary of this new role?",
-      },
-      {
-          type: "list",
-          name: "department",
-          message: "What department is the new role in?",
-    choices: departments.map(({ name, id }) => ({
-      name: name,
-      value:id,
-    })),
-  },
-]);
-console.log(ans);
-await db
-  .promise()
-  .query(`INSERT INTO role (title,salary,department_id) VALUES ('${ans.title}', '${ans.salary}', '${ans.department}')`
-  );
-viewAllRoles();
+    {
+      type: "input",
+      name: "title",
+      message: "What is the title of the new role?",
+    },
+    {
+      type: "input",
+      name: "salary",
+      message: "What is the salary of this new role?",
+    },
+    {
+      type: "list",
+      name: "department",
+      message: "What department is the new role in?",
+      choices: departments.map(({ name, id }) => ({
+        name: name,
+        value: id,
+      })),
+    },
+  ]);
+  console.log(ans);
+  await db
+    .promise()
+    .query(
+      `INSERT INTO role (title,salary,department_id) VALUES ('${ans.title}', '${ans.salary}', '${ans.department}')`
+    );
+  viewAllRoles();
 }
+
+async function updateEmployee() {
+  const [employees] = await db.promise().query("select * from employee");
+  const [roles] = await db.promise().query("select * from role");
+  const ans = await inquirer.prompt([
+    {
+      type: "list",
+      name: "employee",
+      message: "Which employee would you like to change the role of?",
+      choices: employees.map(({ first_name, last_name, id }) => ({
+        name: `${first_name} ${last_name}`,
+        value: id,
+      })),
+    },
+    {
+      type: "list",
+      name: "role",
+      message: "What role would you like to reassign them to?",
+      choices: roles.map(({ title, id }) => ({
+        name: title,
+        value: id,
+      })),
+    },
+  ]);
+  await db
+    .promise()
+    .query(
+      `UPDATE employee SET role_id = ${ans.role} WHERE id = ${ans.employee}`
+    );
+  viewAllEmployees();
+}
+
 promptUser();
